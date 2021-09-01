@@ -1,7 +1,7 @@
 //Uncomment the following line if you are compiling this code in Visual Studio
 //#include "stdafx.h"
 
-#include <opencv4.hpp>
+#include <opencv2/opencv.hpp>
 #include <iostream>
 
 using namespace cv;
