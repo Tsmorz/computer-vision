@@ -1,26 +1,27 @@
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+from matplotlib import pyplot as plt
 import cv2
 import numpy as np
 
 file = 'Small Bend.jpg'
 img = cv2.imread(file)
-img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 print(img.shape)
 
+# remove noise
+img = cv2.GaussianBlur(gray,(7,7),0)
 
-fig = plt.figure()
+# convolute with proper kernels
+laplacian = cv2.Laplacian(img,cv2.CV_64F)
+sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5)  # x
+sobely = cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5)  # y
 
-x = np.diff(img,axis=0)
-y = np.diff(img,axis=1)
+plt.subplot(2,2,1),plt.imshow(img,cmap = 'gray')
+plt.title('Original'), plt.xticks([]), plt.yticks([])
+plt.subplot(2,2,2),plt.imshow(laplacian,cmap = 'gray')
+plt.title('Laplacian'), plt.xticks([]), plt.yticks([])
+plt.subplot(2,2,3),plt.imshow(sobelx,cmap = 'gray')
+plt.title('Sobel X'), plt.xticks([]), plt.yticks([])
+plt.subplot(2,2,4),plt.imshow(sobely,cmap = 'gray')
+plt.title('Sobel Y'), plt.xticks([]), plt.yticks([])
 
-xx = np.diff(x,axis=0)
-yy = np.diff(y,axis=1)
-xy = np.diff(x,axis=1)
-
-cv2.imshow('Grayscale', img)
-cv2.waitKey(0) 
-
-def gaussian(image):
-    mu, sigma = 0, 0.1
-    return image
+plt.show()
