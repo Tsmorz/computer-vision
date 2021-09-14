@@ -2,9 +2,10 @@ from matplotlib import pyplot as plt
 import cv2
 import numpy as np
 
-file = 'Small Bend.jpg'
+file = 'tomatoes.jpg'
 img = cv2.imread(file)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray = img[:,:,2]
 print(img.shape)
 
 # remove noise
