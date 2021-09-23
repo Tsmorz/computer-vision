@@ -1,5 +1,6 @@
 import numpy as np
 import cv2 as cv
+import matplotlib.pyplot as plt
 
 img = cv.imread('tomato.jpg')
 gray= cv.cvtColor(img,cv.COLOR_BGR2GRAY)
@@ -9,4 +10,5 @@ kp = sift.detect(gray,None)
 
 img=cv.drawKeypoints(gray,kp,img)
 cv.imwrite('sift_keypoints.jpg',img)
-cv.imshow(img)
+plt.imshow(img)
+plt.show()
