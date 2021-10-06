@@ -1,6 +1,0 @@
-% Detect interest points and mark their locations
-img = '/home/tsmorz/Pictures/Still Shots/Horseshoe Bend.jpg';
-I = imread('cameraman.jpg');
-points = detectSURFFeatures(I);
-imshow(I); hold on;
-plot(points.selectStrongest(10));
