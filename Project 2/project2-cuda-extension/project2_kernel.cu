@@ -40,7 +40,7 @@ __global__ void k_norm_cross_corr(
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     const int f_h = f.size(0);
     const int f_h_r = f_h / 2;
-    const int f_w = f.size(1) / 2;
+    const int f_w = f.size(1);
     const int f_w_r = f_w / 2;
     scalar_t in_norm = 0.;
     scalar_t f_norm = 0.;
@@ -86,16 +86,20 @@ void k_corner_nms(const torch::PackedTensorAccessor32<scalar_t, 2, torch::Restri
                   torch::PackedTensorAccessor32<scalar_t, 2, torch::RestrictPtrTraits> out) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
-    scalar_t max = 0.;
-    scalar_t self_val = in[x][y];
-    for (int i = - window_rad; i <= window_rad; i++) {
-    for (int j = - window_rad; j <= window_rad; j++) {
-        if (i + x >= 0 && j + y >= 0) {
-            scalar_t curr_val = in[x + i][y + j];
-            if (max < curr_val)
-                max = curr_val;
-    }}}
-    out[x][y] = max == self_val ? self_val : 0.;
+    const int x_size = in.size(0);
+    const int y_size = in.size(1);
+    if (x < x_size && y < y_size) {
+        scalar_t max = 0.;
+        scalar_t self_val = in[x][y];
+        for (int i = - window_rad; i <= window_rad; i++) {
+        for (int j = - window_rad; j <= window_rad; j++) {
+            if (x_size >i + x >= 0 && y_size > j + y >= 0) {
+                scalar_t curr_val = in[x + i][y + j];
+                if (max < curr_val)
+                    max = curr_val;
+        }}}
+        out[x][y] = max == self_val ? self_val : 0.;
+    }
 }
 
 
@@ -123,20 +127,25 @@ void k_harris_corner(const torch::PackedTensorAccessor32<scalar_t, 2, torch::Res
                      torch::PackedTensorAccessor32<scalar_t, 2, torch::RestrictPtrTraits> out) {
         const int x = blockIdx.x * blockDim.x + threadIdx.x;
         const int y = blockIdx.y * blockDim.y + threadIdx.y;
-        scalar_t sum_I_xx = 0.;
-        scalar_t sum_I_yy = 0.;
-        scalar_t sum_I_xy = 0.;
-        for (int i = - radius; i <= radius; i++) {
-        for (int j = - radius; j <= radius; j++) {
-        if (i + x >= 0 && j + y >= 0) {
-            scalar_t curr_I_x = I_x[i + x][j + y];
-            scalar_t curr_I_y = I_y[i + x][j + y];
-            sum_I_xx += curr_I_x * curr_I_x;
-            sum_I_yy += curr_I_y * curr_I_y;
-            sum_I_xy += curr_I_x * curr_I_y;
+        const int x_size = I_x.size(0);
+        const int y_size = I_y.size(1);
+        if (x < x_size && y < y_size) {
+            scalar_t sum_I_xx = 0.;
+            scalar_t sum_I_yy = 0.;
+            scalar_t sum_I_xy = 0.;
+            for (int i = - radius; i <= radius; i++) {
+            for (int j = - radius; j <= radius; j++) {
+            if (i + x >= 0 && j + y >= 0) {
+                scalar_t curr_I_x = I_x[i + x][j + y];
+                scalar_t curr_I_y = I_y[i + x][j + y];
+                sum_I_xx += curr_I_x * curr_I_x;
+                sum_I_yy += curr_I_y * curr_I_y;
+                sum_I_xy += curr_I_x * curr_I_y;
+            }}}
+            scalar_t det = sum_I_xx * sum_I_yy - sum_I_xy * sum_I_xy;
+            scalar_t trace = sum_I_xx + sum_I_yy;
+            out[x][y] =  det - k * trace * trace;
         }
-    }}
-    out[x][y] = sum_I_xx * sum_I_yy - sum_I_xy * sum_I_xy - k * (sum_I_xx + sum_I_yy) * (sum_I_xx + sum_I_yy);
 }
 
 
